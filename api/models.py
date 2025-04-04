@@ -16,7 +16,7 @@ class Face(Base):
     id = Column(String, primary_key=True, default=generate_uuid_bin)
     user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), unique=True)
     face_encoding = Column(LargeBinary, nullable=True)
-
+    photo = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

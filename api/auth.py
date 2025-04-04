@@ -31,10 +31,6 @@ def get_current_user(
 
     user_id_bin = result[0]  # Should be BINARY(16)
     
-    # user_id_bin = "0195709d-afdc-73aa-9e92-8fb43148264a"
-    
-    print(user_id_bin)
-    
     try:
         user = db.query(User).filter(User.id == user_id_bin).first()
     except Exception:

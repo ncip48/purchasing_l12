@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, Lock, Package } from 'lucide-react';
+import { CalendarCheck, LayoutGrid, Lock, Package } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -16,6 +16,21 @@ const mainNavItems: NavItem[] = [
         title: 'Product',
         url: '/product',
         icon: Package,
+    },
+    {
+        title: 'Attendance',
+        url: '/attendance',
+        icon: CalendarCheck,
+        items: [
+            {
+                title: 'Facial Photo',
+                url: '/attendance/facial-photo',
+            },
+            {
+                title: 'Attendance Daily',
+                url: '/attendance/attendance-daily',
+            },
+        ],
     },
     {
         title: 'Role & Permission',
