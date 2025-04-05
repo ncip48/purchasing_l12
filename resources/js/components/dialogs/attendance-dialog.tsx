@@ -3,7 +3,19 @@ import { AttendanceMutationType } from '@/types/attendance';
 import { makeToast } from '@/utils/toast';
 import { router, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { AlertCircle, AlertTriangle, CameraOff, CheckCircle, Eye, LoaderCircle, MicOff, MoveUp } from 'lucide-react';
+import {
+    AlertCircle,
+    AlertTriangle,
+    CameraOff,
+    CheckCircle,
+    Clock4Icon,
+    Clock8Icon,
+    Eye,
+    LoaderCircle,
+    MicOff,
+    MoveUp,
+    XCircleIcon,
+} from 'lucide-react';
 import { JSX, useEffect, useRef, useState } from 'react';
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
 import { Badge } from '../ui/badge';
@@ -322,11 +334,12 @@ export function AttendanceDialog({
                 <AlertDialogFooter className="mt-2 flex flex-col gap-2">
                     <div className="flex w-full flex-col items-center justify-end gap-2 sm:flex-row">
                         <Button variant="destructive" className="w-full sm:w-auto" onClick={() => setOpen(false)}>
+                            <XCircleIcon />
                             Cancel
                         </Button>
 
                         <Button className="w-full sm:w-auto" onClick={() => submitIn()} disabled={!actionDetected || processingIn || !!attendance.in}>
-                            {processingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                            {processingIn ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Clock8Icon className="h-4 w-4" />}
                             Clock In
                         </Button>
 
@@ -336,7 +349,7 @@ export function AttendanceDialog({
                             onClick={() => submitOut()}
                             disabled={!actionDetected || processingOut || !attendance.in || !!attendance.out}
                         >
-                            {processingOut && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                            {processingOut ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Clock4Icon className="h-4 w-4" />}
                             Clock Out
                         </Button>
                     </div>
