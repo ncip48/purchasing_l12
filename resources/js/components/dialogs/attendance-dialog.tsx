@@ -5,17 +5,9 @@ import { router, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { AlertCircle, CameraOff, CheckCircle, Eye, LoaderCircle, MicOff, MoveUp } from 'lucide-react';
 import { JSX, useEffect, useRef, useState } from 'react';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '../ui/alert-dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
 import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 
 const challengeMap: Record<string, { text: string; icon: JSX.Element }> = {
@@ -246,64 +238,88 @@ export function AttendanceDialog({
 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
-            <AlertDialogContent className="sm:max-w-[425px]">
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Attendance</AlertDialogTitle>
-                    <AlertDialogDescription>Scan your face to mark your attendance.</AlertDialogDescription>
+            <AlertDialogContent className="sm:max-w-[500px]">
+                <AlertDialogHeader className="text-center">
+                    <AlertDialogTitle className="text-2xl">Face Attendance</AlertDialogTitle>
+                    <AlertDialogDescription className="text-muted-foreground">
+                        Please face the camera and follow the challenge below.
+                    </AlertDialogDescription>
                 </AlertDialogHeader>
-                <div className="flex flex-col items-center justify-center gap-6 p-6">
+
+                <div className="flex flex-col items-center gap-4 px-4 py-2">
+                    {/* Video feed card */}
                     <Card
-                        className={`relative w-80 border ${faceDetected && faceMatch && !actionDetected && challenge ? 'border-muted' : actionDetected ? 'border-success' : 'border-destructive'}`}
+                        className={`relative w-full max-w-xs border transition-colors duration-300 ${
+                            faceDetected && faceMatch && !actionDetected && challenge
+                                ? 'border-muted'
+                                : actionDetected
+                                  ? 'border-green-500'
+                                  : 'border-red-500'
+                        }`}
                     >
                         <CardContent className="p-0">
-                            <video ref={videoRef} autoPlay className="h-64 w-full rounded-md" style={{ transform: 'scaleX(-1)' }} />
-                            {!faceDetected && !actionDetected && challenge && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-lg font-bold text-white">
+                            <video ref={videoRef} autoPlay className="h-64 w-full rounded-md object-cover" style={{ transform: 'scaleX(-1)' }} />
+                            {!challenge && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
+                                    <CameraOff className="h-10 w-10 text-red-500" />
+                                </div>
+                            )}
+                            {!faceDetected && challenge && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
                                     Face not detected
                                 </div>
                             )}
-                            {!faceMatch && faceDetected && !actionDetected && challenge && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-lg font-bold text-white">
-                                    Face not match
-                                </div>
-                            )}
-                            {!challenge && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
-                                    <CameraOff className="text-destructive h-10 w-10" />
+                            {faceDetected && !faceMatch && challenge && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
+                                    Face not matched
                                 </div>
                             )}
                             {isDone && (
                                 <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/80">
-                                    <CheckCircle className="text-success h-10 w-10" />
+                                    <CheckCircle className="h-10 w-10 text-green-500" />
                                 </div>
                             )}
                         </CardContent>
                     </Card>
+
+                    {/* Challenge display */}
                     <motion.div
                         key={challenge?.text}
-                        initial={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
                         className="flex items-center gap-2"
                     >
                         {challenge?.icon}
-                        <Badge>{challenge?.text ?? 'Waiting for challenge...'}</Badge>
+                        <Badge variant="outline">{challenge?.text ?? 'Waiting for challenge...'}</Badge>
                     </motion.div>
-                    <p className="text-muted-foreground">{message}</p>
+
+                    {/* Message */}
+                    <p className="text-muted-foreground text-center text-sm">{message}</p>
                 </div>
-                <AlertDialogFooter>
-                    <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-                    <AlertDialogAction type="button" onClick={() => submitIn()} disabled={!actionDetected || processingIn || !!attendance.in}>
-                        {processingIn && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Clock-In
-                    </AlertDialogAction>
-                    <AlertDialogAction
-                        type="button"
-                        onClick={() => submitOut()}
-                        disabled={!actionDetected || processingOut || !attendance.in || !!attendance.out}
-                    >
-                        {processingOut && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Clock-Out
-                    </AlertDialogAction>
+
+                {/* Footer with actions */}
+                <AlertDialogFooter className="flex flex-col gap-2">
+                    <div className="flex w-full items-center justify-between gap-2">
+                        <Button variant="destructive" className="flex-1" onClick={() => setOpen(false)}>
+                            Cancel
+                        </Button>
+
+                        <Button className="flex-1" onClick={() => submitIn()} disabled={!actionDetected || processingIn || !!attendance.in}>
+                            {processingIn ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Clock In
+                        </Button>
+
+                        <Button
+                            variant="secondary"
+                            className="flex-1"
+                            onClick={() => submitOut()}
+                            disabled={!actionDetected || processingOut || !attendance.in || !!attendance.out}
+                        >
+                            {processingOut ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Clock Out
+                        </Button>
+                    </div>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
