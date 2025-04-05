@@ -18,7 +18,7 @@ import { BreadcrumbItem, PageProps } from '@/types';
 import { AttendanceType } from '@/types/attendance';
 import { Head, usePage } from '@inertiajs/react';
 import { addHours } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, StampIcon } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -45,7 +45,10 @@ function Page({ items }: { items: AttendanceType[] }) {
                     <CardContent>
                         <div className="flex items-center justify-between">
                             <h2 className="mb-4 text-xl font-bold">Attendance Daily</h2>
-                            <Button onClick={() => setOpenModal(true)}>Attend</Button>
+                            <Button onClick={() => setOpenModal(true)}>
+                                <StampIcon />
+                                Attend
+                            </Button>
                         </div>
                         <Calendar
                             events={items.map((item) => ({

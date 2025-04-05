@@ -3,7 +3,7 @@ import { AttendanceMutationType } from '@/types/attendance';
 import { makeToast } from '@/utils/toast';
 import { router, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { AlertCircle, CameraOff, CheckCircle, Eye, LoaderCircle, MicOff, MoveUp } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CameraOff, CheckCircle, Eye, LoaderCircle, MicOff, MoveUp } from 'lucide-react';
 import { JSX, useEffect, useRef, useState } from 'react';
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
 import { Badge } from '../ui/badge';
@@ -244,85 +244,99 @@ export function AttendanceDialog({
 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
-            <AlertDialogContent className="sm:max-w-[500px]">
+            <AlertDialogContent className="sm:max-w-5xl">
                 <AlertDialogHeader className="text-center">
                     <AlertDialogTitle className="text-2xl">Face Attendance</AlertDialogTitle>
                     <AlertDialogDescription className="text-muted-foreground">
-                        Please face the camera and follow the challenge below.
+                        Please face the camera and follow the instructions to mark your attendance.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
 
-                <div className="flex flex-col items-center gap-4 px-4 py-2">
-                    {/* Video feed card */}
-                    <Card
-                        className={`relative w-full max-w-xs border transition-colors duration-300 ${
-                            faceDetected && faceMatch && !actionDetected && challenge
-                                ? 'border-muted'
-                                : actionDetected
-                                  ? 'border-green-500'
-                                  : 'border-red-500'
-                        }`}
-                    >
-                        <CardContent className="p-0">
-                            <video ref={videoRef} autoPlay className="h-64 w-full rounded-md object-cover" style={{ transform: 'scaleX(-1)' }} />
-                            {!challenge && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
-                                    <CameraOff className="h-10 w-10 text-red-500" />
-                                </div>
-                            )}
-                            {!faceDetected && challenge && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
-                                    Face not detected
-                                </div>
-                            )}
-                            {faceDetected && !faceMatch && challenge && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
-                                    Face not matched
-                                </div>
-                            )}
-                            {isDone && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/80">
-                                    <CheckCircle className="h-10 w-10 text-green-500" />
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 items-start gap-6 px-2 py-4 md:grid-cols-2 md:px-4">
+                    {/* === Left: Camera preview === */}
+                    <div className="flex flex-col items-center gap-4">
+                        <Card
+                            className={`relative w-full max-w-md border transition-colors duration-300 ${
+                                faceDetected && faceMatch && !actionDetected && challenge
+                                    ? 'border-muted'
+                                    : actionDetected
+                                      ? 'border-green-500'
+                                      : 'border-red-500'
+                            }`}
+                        >
+                            <CardContent className="p-0">
+                                <video ref={videoRef} autoPlay className="h-72 w-full rounded-md object-cover" style={{ transform: 'scaleX(-1)' }} />
+                                {!challenge && (
+                                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
+                                        <CameraOff className="h-10 w-10 text-red-500" />
+                                    </div>
+                                )}
+                                {!faceDetected && challenge && !isDone && (
+                                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
+                                        Face not detected
+                                    </div>
+                                )}
+                                {faceDetected && !faceMatch && challenge && !isDone && (
+                                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
+                                        Face not matched
+                                    </div>
+                                )}
+                                {isDone && (
+                                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/70">
+                                        <CheckCircle className="h-10 w-10 text-green-500" />
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                    {/* Challenge display */}
-                    <motion.div
-                        key={challenge?.text}
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="flex items-center gap-2"
-                    >
-                        {challenge?.icon}
-                        <Badge variant="outline">{challenge?.text ?? 'Waiting for challenge...'}</Badge>
-                    </motion.div>
+                        <motion.div
+                            key={challenge?.text}
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex items-center gap-2"
+                        >
+                            {challenge?.icon}
+                            <Badge variant="outline">{challenge?.text ?? 'Waiting for challenge...'}</Badge>
+                        </motion.div>
 
-                    {/* Message */}
-                    <p className="text-muted-foreground text-center text-sm">{message}</p>
+                        <p className="text-muted-foreground text-center text-sm">{message}</p>
+                    </div>
+
+                    {/* === Right: Attention / Instructions === */}
+                    <div className="bg-muted hidden rounded-lg border p-5 shadow-sm md:block">
+                        <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+                            <AlertTriangle className="text-yellow-500" size={20} />
+                            Attention
+                        </h3>
+                        <ul className="text-muted-foreground list-inside list-disc space-y-2 text-sm">
+                            <li>Make sure your face is facing the camera.</li>
+                            <li>Take off your mask, glasses, and other face coverings.</li>
+                            <li>Position yourself in good lighting conditions.</li>
+                            <li>Ensure the face detected is the current logged-in user.</li>
+                        </ul>
+                    </div>
                 </div>
 
-                {/* Footer with actions */}
-                <AlertDialogFooter className="flex flex-col gap-2">
-                    <div className="flex w-full items-center justify-between gap-2">
-                        <Button variant="destructive" className="flex-1" onClick={() => setOpen(false)}>
+                {/* Footer */}
+                <AlertDialogFooter className="mt-2 flex flex-col gap-2">
+                    <div className="flex w-full flex-col items-center justify-end gap-2 sm:flex-row">
+                        <Button variant="destructive" className="w-full sm:w-auto" onClick={() => setOpen(false)}>
                             Cancel
                         </Button>
 
-                        <Button className="flex-1" onClick={() => submitIn()} disabled={!actionDetected || processingIn || !!attendance.in}>
-                            {processingIn ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        <Button className="w-full sm:w-auto" onClick={() => submitIn()} disabled={!actionDetected || processingIn || !!attendance.in}>
+                            {processingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                             Clock In
                         </Button>
 
                         <Button
                             variant="secondary"
-                            className="flex-1"
+                            className="w-full sm:w-auto"
                             onClick={() => submitOut()}
                             disabled={!actionDetected || processingOut || !attendance.in || !!attendance.out}
                         >
-                            {processingOut ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            {processingOut && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                             Clock Out
                         </Button>
                     </div>
