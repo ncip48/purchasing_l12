@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { JSX, useEffect, useRef, useState } from 'react';
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
-import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 
@@ -39,7 +38,7 @@ export function AttendanceDialog({
 }) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
-    const [message, setMessage] = useState('Initializing...');
+    const [message, setMessage] = useState<string | null>('Initializing...');
     const [actionDetected, setActionDetected] = useState(false);
     const [faceDetected, setFaceDetected] = useState(true);
     const [faceMatch, setFaceMatch] = useState(false);
@@ -117,7 +116,7 @@ export function AttendanceDialog({
                     challengeMap[data.challenge] || { text: 'Unknown challenge', icon: <AlertCircle className="text-muted-foreground h-6 w-6" /> },
                 );
                 setActionDetected(data.action_detected || false);
-                setMessage(data.action_detected ? 'Action detected!' : 'Please follow the instruction.');
+                setMessage(null);
             };
         } else {
             stopAnything();
@@ -264,9 +263,29 @@ export function AttendanceDialog({
                     </AlertDialogDescription>
                 </AlertDialogHeader>
 
-                <div className="grid grid-cols-1 items-start gap-6 px-2 py-4 md:grid-cols-2 md:px-4">
+                {/* === Status Message === */}
+                {attendance.in && attendance.out && (
+                    <div className="border-muted bg-muted text-muted-foreground rounded-md border p-4 text-sm">
+                        <ul className="list-inside list-disc space-y-1">
+                            {attendance.in && (
+                                <li>
+                                    You have <span className="text-primary font-medium">clocked in</span> at{' '}
+                                    <span className="font-semibold">{new Date(attendance.in).toLocaleTimeString()}</span>.
+                                </li>
+                            )}
+                            {attendance.out && (
+                                <li>
+                                    You have <span className="text-primary font-medium">clocked out</span> at{' '}
+                                    <span className="font-semibold">{new Date(attendance.out).toLocaleTimeString()}</span>.
+                                </li>
+                            )}
+                        </ul>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 items-start gap-2 px-2 py-2 md:grid-cols-2 md:px-0">
                     {/* === Left: Camera preview === */}
-                    <div className="flex flex-col items-center gap-4">
+                    <div className="flex flex-col gap-4">
                         <Card
                             className={`relative w-full max-w-md border transition-colors duration-300 ${
                                 faceDetected && faceMatch && !actionDetected && challenge
@@ -276,32 +295,59 @@ export function AttendanceDialog({
                                       : 'border-red-500'
                             }`}
                         >
-                            <CardContent className="p-0">
+                            <CardContent className="relative p-0">
                                 <video ref={videoRef} autoPlay className="h-72 w-full rounded-md object-cover" style={{ transform: 'scaleX(-1)' }} />
+
+                                {/* Overlay: Camera off */}
                                 {!challenge && (
                                     <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
                                         <CameraOff className="h-10 w-10 text-red-500" />
                                     </div>
                                 )}
+
+                                {/* Overlay: Face not detected */}
                                 {!faceDetected && challenge && !isDone && (
                                     <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
                                         Face not detected
                                     </div>
                                 )}
+
+                                {/* Overlay: Face not matched */}
                                 {faceDetected && !faceMatch && challenge && !isDone && (
                                     <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
                                         Face not matched
                                     </div>
                                 )}
+
+                                {/* Overlay: Done */}
                                 {isDone && (
                                     <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/70">
                                         <CheckCircle className="h-10 w-10 text-green-500" />
                                     </div>
                                 )}
+
+                                {/* Overlay: Challenge badge at bottom */}
+                                {(challenge?.text || message) && (
+                                    <motion.div
+                                        key={challenge?.text}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="absolute bottom-2 left-1/2 w-[90%] -translate-x-1/2 rounded-md bg-black/60 px-4 py-2 text-white backdrop-blur"
+                                    >
+                                        {challenge?.text && (
+                                            <div className="flex items-center justify-center gap-2 text-sm">
+                                                {challenge.icon}
+                                                <span>{challenge.text}</span>
+                                            </div>
+                                        )}
+                                        {message && <p className="mt-1 text-center text-xs text-white">{message}</p>}
+                                    </motion.div>
+                                )}
                             </CardContent>
                         </Card>
 
-                        <motion.div
+                        {/* <motion.div
                             key={challenge?.text}
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -312,7 +358,7 @@ export function AttendanceDialog({
                             <Badge variant="outline">{challenge?.text ?? 'Waiting for challenge...'}</Badge>
                         </motion.div>
 
-                        <p className="text-muted-foreground text-center text-sm">{message}</p>
+                        <p className="text-muted-foreground text-center text-sm">{message}</p> */}
                     </div>
 
                     {/* === Right: Attention / Instructions === */}
