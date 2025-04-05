@@ -31,16 +31,30 @@ face_mesh = mp_face_mesh.FaceMesh(refine_landmarks=True)
 mp_drawing = mp.solutions.drawing_utils
 
 @app.websocket("/ws/liveness")
-async def liveness_websocket(websocket: WebSocket,db: Session = Depends(get_db)):
+async def liveness_websocket(websocket: WebSocket, db: Session = Depends(get_db)):
     await websocket.accept()
-    
+
+    # ✅ Get user_id from query parameter
+    user_id = websocket.query_params.get("user_id")
+    if not user_id:
+        await websocket.send_json({"error": "Missing user_id"})
+        await websocket.close()
+        return
+
+    # ✅ Check if the face is registered first
+    face = db.query(Face).filter(Face.user_id == user_id).first()
+    if not face:
+        await websocket.send_json({"is_face_registered": False})
+        await websocket.close()
+        return
+
     challenge = random.choice(["blink", "mouth_open"])  # Random challenge
 
     try:
         while True:
             data = await websocket.receive_text()
             frame = cv2.imdecode(np.frombuffer(base64.b64decode(data), np.uint8), cv2.IMREAD_COLOR)
-            
+
             # Resize to square image to avoid MediaPipe warnings
             height, width = frame.shape[:2]
             size = max(height, width)
@@ -50,38 +64,51 @@ async def liveness_websocket(websocket: WebSocket,db: Session = Depends(get_db))
 
             face_match = False
             face_detected = False
-            
+
             if results.multi_face_landmarks:
                 face_detected = True
                 face_locations = face_recognition.face_locations(frame)
                 face_encodings = face_recognition.face_encodings(frame, face_locations)
-                
-                user_id = "0195709d-afdc-73aa-9e92-8fb43148264a"
-                face = db.query(Face).filter(Face.user_id == user_id).first()
-                
-                if face:
-                    stored_face_encoding = np.frombuffer(face.face_encoding, dtype=np.float64)
-                    for face_encoding in face_encodings:
-                        match = face_recognition.compare_faces([stored_face_encoding], face_encoding)[0]
-                        if match:
-                            face_match = True
-                
+
+                stored_face_encoding = np.frombuffer(face.face_encoding, dtype=np.float64)
+                for face_encoding in face_encodings:
+                    match = face_recognition.compare_faces([stored_face_encoding], face_encoding)[0]
+                    if match:
+                        face_match = True
+
                 landmarks = np.array([(lm.x, lm.y, lm.z) for lm in results.multi_face_landmarks[0].landmark])
 
                 if ((challenge == "blink" and detect_blink(landmarks)) or
-                        (challenge == "mouth_open" and detect_mouth_open(landmarks)) or
-                        (challenge == "nod" and detect_nod(landmarks))):
-                    await websocket.send_json({"challenge": challenge, "action_detected": True, "face_detected": True, "face_match": face_match})
-                    break  # Challenge completed
+                    (challenge == "mouth_open" and detect_mouth_open(landmarks)) or
+                    (challenge == "nod" and detect_nod(landmarks))):
+                    await websocket.send_json({
+                        "challenge": challenge,
+                        "action_detected": True,
+                        "face_detected": True,
+                        "face_match": face_match,
+                        "is_face_registered": True,
+                    })
+                    break
                 else:
-                    await websocket.send_json({"challenge": challenge, "face_detected": True, "face_match": face_match})
+                    await websocket.send_json({
+                        "challenge": challenge,
+                        "face_detected": True,
+                        "face_match": face_match,
+                        "is_face_registered": True,
+                    })
             else:
-                await websocket.send_json({"challenge": challenge, "face_detected": False, "face_match": False})
+                await websocket.send_json({
+                    "challenge": challenge,
+                    "face_detected": False,
+                    "face_match": False,
+                    "is_face_registered": True,
+                })
 
     except Exception as e:
         print(f"WebSocket Error: {e}")
     finally:
         await websocket.close()
+
         
 @router.post("/train-face")
 async def train_face(

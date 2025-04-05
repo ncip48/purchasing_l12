@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { SharedData } from '@/types';
 import { AttendanceMutationType } from '@/types/attendance';
 import { makeToast } from '@/utils/toast';
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
     AlertCircle,
@@ -36,6 +37,8 @@ export function AttendanceDialog({
     setOpen: (open: boolean) => void;
     attendance: { in: null | string; out: null | string };
 }) {
+    const { auth } = usePage<SharedData>().props;
+
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
     const [message, setMessage] = useState<string | null>('Initializing...');
@@ -44,24 +47,9 @@ export function AttendanceDialog({
     const [faceMatch, setFaceMatch] = useState(false);
     const [challenge, setChallenge] = useState<{ text: string; icon: JSX.Element } | null>(null);
     const [isDone, setIsDone] = useState(false);
+    const [faceRegistered, setFaceRegistered] = useState(false);
 
-    useEffect(() => {
-        wsRef.current = new WebSocket('ws://localhost:8080/ws/liveness');
-
-        wsRef.current.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            console.log('Received data:', data);
-            setFaceDetected(data.face_detected);
-            setFaceMatch(data.face_match);
-            setChallenge(
-                challengeMap[data.challenge] || { text: 'Unknown challenge', icon: <AlertCircle className="text-muted-foreground h-6 w-6" /> },
-            );
-            setActionDetected(data.action_detected || false);
-            setMessage(data.action_detected ? 'Action detected!' : 'Please follow the instruction.');
-        };
-
-        return () => wsRef.current?.close();
-    }, [open]);
+    const WS_URL = `ws://localhost:8080/ws/liveness?user_id=${auth.user.id}`;
 
     const sendFrame = (frame: string) => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -105,7 +93,7 @@ export function AttendanceDialog({
             startCamera();
 
             // Reinitialize WebSocket when dialog opens
-            wsRef.current = new WebSocket('ws://localhost:8080/ws/liveness');
+            wsRef.current = new WebSocket(WS_URL);
 
             wsRef.current.onmessage = (event) => {
                 const data = JSON.parse(event.data);
@@ -117,6 +105,7 @@ export function AttendanceDialog({
                 );
                 setActionDetected(data.action_detected || false);
                 setMessage(null);
+                setFaceRegistered(data.is_face_registered);
             };
         } else {
             stopAnything();
@@ -283,83 +272,74 @@ export function AttendanceDialog({
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 items-start gap-2 px-2 py-2 md:grid-cols-2 md:px-0">
+                <div className="grid grid-cols-1 items-start gap-4 px-2 md:grid-cols-2 md:px-0">
                     {/* === Left: Camera preview === */}
-                    <div className="flex flex-col gap-4">
-                        <Card
-                            className={`relative w-full max-w-md border transition-colors duration-300 ${
-                                faceDetected && faceMatch && !actionDetected && challenge
-                                    ? 'border-muted'
-                                    : actionDetected
-                                      ? 'border-green-500'
-                                      : 'border-red-500'
-                            }`}
-                        >
-                            <CardContent className="relative p-0">
-                                <video ref={videoRef} autoPlay className="h-72 w-full rounded-md object-cover" style={{ transform: 'scaleX(-1)' }} />
+                    <Card
+                        className={`relative w-full border !p-1 transition-colors duration-300 ${
+                            faceDetected && faceMatch && !actionDetected && challenge
+                                ? 'border-muted'
+                                : actionDetected
+                                  ? 'border-green-500'
+                                  : 'border-red-500'
+                        }`}
+                    >
+                        <CardContent className="relative p-0">
+                            <video ref={videoRef} autoPlay className="h-72 w-full rounded-lg object-cover" style={{ transform: 'scaleX(-1)' }} />
 
-                                {/* Overlay: Camera off */}
-                                {!challenge && (
-                                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
-                                        <CameraOff className="h-10 w-10 text-red-500" />
-                                    </div>
-                                )}
+                            {/* Overlay: Camera off */}
+                            {!challenge && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60">
+                                    <CameraOff className="h-10 w-10 text-red-500" />
+                                </div>
+                            )}
 
-                                {/* Overlay: Face not detected */}
-                                {!faceDetected && challenge && !isDone && (
-                                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
-                                        Face not detected
-                                    </div>
-                                )}
+                            {!faceDetected && challenge && !isDone && !faceRegistered && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/80 text-sm font-bold text-white">
+                                    You must register your face first
+                                </div>
+                            )}
 
-                                {/* Overlay: Face not matched */}
-                                {faceDetected && !faceMatch && challenge && !isDone && (
-                                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
-                                        Face not matched
-                                    </div>
-                                )}
+                            {/* Overlay: Face not detected */}
+                            {!faceDetected && challenge && !isDone && faceRegistered && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
+                                    Face not detected
+                                </div>
+                            )}
 
-                                {/* Overlay: Done */}
-                                {isDone && (
-                                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/70">
-                                        <CheckCircle className="h-10 w-10 text-green-500" />
-                                    </div>
-                                )}
+                            {/* Overlay: Face not matched */}
+                            {faceDetected && !faceMatch && challenge && !isDone && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
+                                    Face not matched
+                                </div>
+                            )}
 
-                                {/* Overlay: Challenge badge at bottom */}
-                                {(challenge?.text || message) && (
-                                    <motion.div
-                                        key={challenge?.text}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="absolute bottom-2 left-1/2 w-[90%] -translate-x-1/2 rounded-md bg-black/60 px-4 py-2 text-white backdrop-blur"
-                                    >
-                                        {challenge?.text && (
-                                            <div className="flex items-center justify-center gap-2 text-sm">
-                                                {challenge.icon}
-                                                <span>{challenge.text}</span>
-                                            </div>
-                                        )}
-                                        {message && <p className="mt-1 text-center text-xs text-white">{message}</p>}
-                                    </motion.div>
-                                )}
-                            </CardContent>
-                        </Card>
+                            {/* Overlay: Done */}
+                            {isDone && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/70">
+                                    <CheckCircle className="h-10 w-10 text-green-500" />
+                                </div>
+                            )}
 
-                        {/* <motion.div
-                            key={challenge?.text}
-                            initial={{ opacity: 0, y: -8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="flex items-center gap-2"
-                        >
-                            {challenge?.icon}
-                            <Badge variant="outline">{challenge?.text ?? 'Waiting for challenge...'}</Badge>
-                        </motion.div>
-
-                        <p className="text-muted-foreground text-center text-sm">{message}</p> */}
-                    </div>
+                            {/* Overlay: Challenge badge at bottom */}
+                            {(challenge?.text || message) && faceRegistered && (
+                                <motion.div
+                                    key={challenge?.text}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="absolute bottom-2 left-1/2 w-[90%] -translate-x-1/2 rounded-md bg-black/60 px-4 py-2 text-white backdrop-blur"
+                                >
+                                    {challenge?.text && !isDone && (
+                                        <div className="flex items-center justify-center gap-2 text-sm">
+                                            {challenge.icon}
+                                            <span>{challenge.text}</span>
+                                        </div>
+                                    )}
+                                    {message && <p className="mt-1 text-center text-xs text-white">{message}</p>}
+                                </motion.div>
+                            )}
+                        </CardContent>
+                    </Card>
 
                     {/* === Right: Attention / Instructions === */}
                     <div className="bg-muted hidden rounded-lg border p-5 shadow-sm md:block">
