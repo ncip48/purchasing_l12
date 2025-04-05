@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Attendance;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,9 +12,14 @@ class AttendanceDailyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('attendance/attendance-daily/index');
+        $model = Attendance::where('user_id', $request->user()->id);
+        $items = $model->get();
+        $attendanceToday = $model->whereDate('created_at', today())->get();
+        $attendanceIn = $attendanceToday->firstWhere('type', 'IN');
+        $attendanceOut = $attendanceToday->firstWhere('type', 'OUT');
+        return Inertia::render('attendance/attendance-daily/index', compact('attendanceIn', 'attendanceOut', 'items'));
     }
 
     /**
@@ -29,7 +35,8 @@ class AttendanceDailyController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request['user_id'] = $request->user()->id;
+        Attendance::create($request->all());
     }
 
     /**

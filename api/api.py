@@ -34,7 +34,7 @@ mp_drawing = mp.solutions.drawing_utils
 async def liveness_websocket(websocket: WebSocket,db: Session = Depends(get_db)):
     await websocket.accept()
     
-    challenge = random.choice(["blink", "mouth_open", "nod"])  # Random challenge
+    challenge = random.choice(["blink", "mouth_open"])  # Random challenge
 
     try:
         while True:
