@@ -203,6 +203,12 @@ export function AttendanceDialog({
 
     const submitIn = () => {
         postIn(route('attendance-daily.store'), {
+            onSuccess: () => {
+                router.visit(route('attendance-daily.index'), {
+                    only: ['attendanceIn', 'attendanceOut', 'items'], // limit refetching only to necessary props
+                    preserveScroll: true,
+                });
+            },
             onFinish: () => {
                 setOpen(false);
                 makeToast({ success: true, message: 'Success attend in' });
