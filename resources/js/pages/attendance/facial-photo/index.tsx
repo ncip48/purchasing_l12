@@ -1,9 +1,11 @@
+import AttendanceTable from '@/components/card/attendance-table';
 import Container from '@/components/container';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem, PageProps } from '@/types';
 import { FaceType } from '@/types/face';
+import { generateMonthlyAttendanceData } from '@/utils/date';
 import { Head, usePage } from '@inertiajs/react';
 import { PlusIcon } from 'lucide-react';
 
@@ -17,6 +19,13 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/attendance/facial-photo',
     },
 ];
+
+const attendanceData = {
+    '2025-04-01': '08:30:00',
+    '2025-04-02': '07:15:20',
+    '2025-04-05': '09:00:00',
+    // ... more
+};
 
 function Page() {
     const { face } = usePage<PageProps<{ face: FaceType }>>().props;
@@ -42,6 +51,12 @@ function Page() {
                                 </CardContent>
                             </Card>
                         </div>
+                        <AttendanceTable
+                            user="Herly Chahya Putra"
+                            month="April"
+                            weeks={generateMonthlyAttendanceData(2025, 4, attendanceData)}
+                            grandTotal="14h"
+                        />
                     </CardContent>
                 </Card>
             </Container>

@@ -2,22 +2,22 @@
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useInitials } from '@/hooks/use-initials';
 import { SharedData } from '@/types';
 import { WorkingTimeType } from '@/types/attendance';
-import { getInitialName } from '@/utils/string';
 import { usePage } from '@inertiajs/react';
 import moment from 'moment';
 
 export default function WorkingTimeCard({ data }: { data: WorkingTimeType }) {
     const { auth } = usePage<SharedData>().props;
-
+    const getInitials = useInitials();
     return (
         <div className="flex flex-col gap-4 md:flex-row">
             {/* Profile Section */}
             <Card className="w-full text-center md:w-1/4">
                 <CardHeader>
                     <Avatar className="mx-auto h-16 w-16">
-                        <AvatarFallback>{getInitialName(auth.user.name)}</AvatarFallback>
+                        <AvatarFallback>{getInitials(auth.user.name)}</AvatarFallback>
                     </Avatar>
                     <CardTitle className="mt-4 text-lg font-semibold">{auth.user.name}</CardTitle>
                     <p className="text-muted-foreground text-sm">{auth.user.email}</p>

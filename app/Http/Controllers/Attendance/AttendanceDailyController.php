@@ -44,7 +44,7 @@ class AttendanceDailyController extends Controller
         $workingTime = [
             'in' => $checkIn ? $checkIn->created_at->setTimezone('Asia/Jakarta')->format('H:i') : '-',
             'out' => $checkOut ? $checkOut->created_at->setTimezone('Asia/Jakarta')->format('H:i') : '-',
-            'time' => $totalTime ? $totalTime >= 60 ? floor($totalTime / 60) . ' hours, ' . round($totalTime % 60) . ' minutes' : round($totalTime) . ' minutes' : '-',
+            'time' => $totalTime ? $totalTime >= 60 ? floor($totalTime / 60) . 'h, ' . round($totalTime % 60) . 'm' : round($totalTime) . 'm' : '-',
             'date' => $filterDate,
         ];
 
