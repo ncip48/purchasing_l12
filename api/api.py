@@ -54,6 +54,20 @@ async def liveness_websocket(websocket: WebSocket, db: Session = Depends(get_db)
         while True:
             data = await websocket.receive_text()
             frame = cv2.imdecode(np.frombuffer(base64.b64decode(data), np.uint8), cv2.IMREAD_COLOR)
+            
+            # ✅ Check for low light condition
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            brightness = np.mean(gray)
+            if brightness < 50:  # You can tune this threshold
+                await websocket.send_json({
+                    "is_low_light": True,
+                    "challenge": challenge,
+                    "action_detected": False,
+                    "face_detected": False,
+                    "face_match": False,
+                    "is_face_registered": True,
+                })
+                continue  # Skip processing this frame
 
             # Resize to square image to avoid MediaPipe warnings
             height, width = frame.shape[:2]
@@ -82,6 +96,7 @@ async def liveness_websocket(websocket: WebSocket, db: Session = Depends(get_db)
                     (challenge == "mouth_open" and detect_mouth_open(landmarks)) or
                     (challenge == "nod" and detect_nod(landmarks))):
                     await websocket.send_json({
+                        "is_low_light": False,
                         "challenge": challenge,
                         "action_detected": True,
                         "face_detected": True,
@@ -91,6 +106,7 @@ async def liveness_websocket(websocket: WebSocket, db: Session = Depends(get_db)
                     break
                 else:
                     await websocket.send_json({
+                        "is_low_light": False,
                         "challenge": challenge,
                         "face_detected": True,
                         "face_match": face_match,
@@ -98,6 +114,7 @@ async def liveness_websocket(websocket: WebSocket, db: Session = Depends(get_db)
                     })
             else:
                 await websocket.send_json({
+                    "is_low_light": False,
                     "challenge": challenge,
                     "face_detected": False,
                     "face_match": False,

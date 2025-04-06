@@ -13,7 +13,7 @@ import {
     CalendarYearView,
 } from '../ui/full-calendar';
 
-function AttendanceDailyCalendar({ items }: { items: AttendanceType[] }) {
+function AttendanceDailyCalendar({ items, onClickDate }: { items: AttendanceType[]; onClickDate: (date: string) => void }) {
     return (
         <Calendar
             events={items.map((item) => ({
@@ -48,7 +48,7 @@ function AttendanceDailyCalendar({ items }: { items: AttendanceType[] }) {
                 <div className="flex-1 overflow-hidden">
                     <CalendarDayView />
                     <CalendarWeekView />
-                    <CalendarMonthView />
+                    <CalendarMonthView onClickDate={onClickDate} />
                     <CalendarYearView />
                 </div>
             </div>

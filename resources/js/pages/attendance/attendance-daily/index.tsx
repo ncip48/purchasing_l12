@@ -1,12 +1,13 @@
 import AttendanceDailyCalendar from '@/components/calendar/attendance-daily-calendar';
+import WorkingTimeCard from '@/components/card/working-time-card';
 import Container from '@/components/container';
 import { AttendanceDialog } from '@/components/dialogs/attendance-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem, PageProps } from '@/types';
-import { AttendanceType } from '@/types/attendance';
-import { Head, usePage } from '@inertiajs/react';
+import { AttendanceType, WorkingTimeType } from '@/types/attendance';
+import { Head, router, usePage } from '@inertiajs/react';
 import { StampIcon } from 'lucide-react';
 import { useState } from 'react';
 
@@ -21,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-function Page({ items }: { items: AttendanceType[] }) {
+function Page({ items, workingTime }: { items: AttendanceType[]; workingTime: WorkingTimeType }) {
     const { attendanceIn, attendanceOut } = usePage<PageProps<{ attendanceIn: AttendanceType | null; attendanceOut: AttendanceType | null }>>().props;
 
     const [openModal, setOpenModal] = useState(false);
@@ -32,14 +33,23 @@ function Page({ items }: { items: AttendanceType[] }) {
             <Container>
                 <Card>
                     <CardContent>
-                        <div className="flex items-center justify-between">
+                        <div className="mb-4 flex items-center justify-between">
                             <h2 className="mb-4 text-xl font-bold">Attendance Daily</h2>
                             <Button onClick={() => setOpenModal(true)}>
                                 <StampIcon />
                                 Attend
                             </Button>
                         </div>
-                        <AttendanceDailyCalendar items={items} />
+                        <WorkingTimeCard data={workingTime} />
+                        <AttendanceDailyCalendar
+                            items={items}
+                            onClickDate={(date) => {
+                                // Make sure to format date as YYYY-MM-DD
+                                const formattedDate = date;
+
+                                router.get(route('attendance-daily.index'), { date: formattedDate });
+                            }}
+                        />
                     </CardContent>
                 </Card>
             </Container>

@@ -324,7 +324,7 @@ const CalendarWeekView = () => {
   );
 };
 
-const CalendarMonthView = () => {
+const CalendarMonthView = ({onClickDate}:{onClickDate:(date:string) => void}) => {
   const { date, view, events, locale } = useCalendar();
 
   const monthDates = useMemo(() => getDaysInMonth(date), [date]);
@@ -363,9 +363,10 @@ const CalendarMonthView = () => {
             >
               <span
                 className={cn(
-                  'size-6 grid place-items-center rounded-full mb-1 sticky top-0',
+                  'size-6 grid place-items-center rounded-full mb-1 sticky top-0 cursor-pointer',
                   isToday(_date) && 'bg-primary text-primary-foreground'
                 )}
+                onClick={() => onClickDate(format(_date, "yyyy-MM-dd"))}
               >
                 {format(_date, 'd')}
               </span>

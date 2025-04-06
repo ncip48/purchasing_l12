@@ -15,3 +15,10 @@ export type AttendanceType = {
     created_at: string;
     updated_at: string;
 };
+
+export type WorkingTimeType = {
+    in: string;
+    out: string;
+    time: string;
+    date: string;
+};

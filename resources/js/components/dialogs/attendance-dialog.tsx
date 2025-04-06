@@ -48,6 +48,7 @@ export function AttendanceDialog({
     const [challenge, setChallenge] = useState<{ text: string; icon: JSX.Element } | null>(null);
     const [isDone, setIsDone] = useState(false);
     const [faceRegistered, setFaceRegistered] = useState(false);
+    const [lowLight, setLowLight] = useState(false);
 
     const WS_URL = `ws://localhost:8080/ws/liveness?user_id=${auth.user.id}`;
 
@@ -106,6 +107,7 @@ export function AttendanceDialog({
                 setActionDetected(data.action_detected || false);
                 setMessage(null);
                 setFaceRegistered(data.is_face_registered);
+                setLowLight(data.is_low_light);
             };
         } else {
             stopAnything();
@@ -299,15 +301,21 @@ export function AttendanceDialog({
                                 </div>
                             )}
 
+                            {!faceDetected && challenge && !isDone && faceRegistered && lowLight && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/80 text-sm font-bold text-white">
+                                    Low light condition detected. Please ensure proper lighting.
+                                </div>
+                            )}
+
                             {/* Overlay: Face not detected */}
-                            {!faceDetected && challenge && !isDone && faceRegistered && (
+                            {!faceDetected && challenge && !isDone && faceRegistered && !lowLight && (
                                 <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
                                     Face not detected
                                 </div>
                             )}
 
                             {/* Overlay: Face not matched */}
-                            {faceDetected && !faceMatch && challenge && !isDone && (
+                            {faceDetected && !faceMatch && challenge && !isDone && faceRegistered && !lowLight && (
                                 <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
                                     Face not matched
                                 </div>

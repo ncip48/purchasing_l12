@@ -14,12 +14,46 @@ class AttendanceDailyController extends Controller
      */
     public function index(Request $request)
     {
-        $model = Attendance::where('user_id', $request->user()->id);
-        $items = $model->get();
-        $attendanceToday = $model->whereDate('created_at', today())->get();
+        $userId = $request->user()->id;
+        $filterDate = $request->input('date', today()->toDateString());
+
+        // Use new queries each time to avoid reusing consumed builder
+        $items = Attendance::where('user_id', $userId)->get();
+
+        $attendanceToday = Attendance::where('user_id', $userId)
+            ->whereDate('created_at', today())
+            ->get();
+
         $attendanceIn = $attendanceToday->firstWhere('type', 'IN');
         $attendanceOut = $attendanceToday->firstWhere('type', 'OUT');
-        return Inertia::render('attendance/attendance-daily/index', compact('attendanceIn', 'attendanceOut', 'items'));
+
+        $checkIn = Attendance::where('user_id', $userId)
+            ->whereDate('created_at', $filterDate)
+            ->where('type', 'IN')
+            ->first();
+
+        $checkOut = Attendance::where('user_id', $userId)
+            ->whereDate('created_at', $filterDate)
+            ->where('type', 'OUT')
+            ->first();
+
+        $totalTime = ($checkIn && $checkOut)
+            ? $checkIn->created_at->diffInMinutes($checkOut->created_at)
+            : 0;
+
+        $workingTime = [
+            'in' => $checkIn ? $checkIn->created_at->setTimezone('Asia/Jakarta')->format('H:i') : '-',
+            'out' => $checkOut ? $checkOut->created_at->setTimezone('Asia/Jakarta')->format('H:i') : '-',
+            'time' => $totalTime ? $totalTime >= 60 ? floor($totalTime / 60) . ' hours, ' . round($totalTime % 60) . ' minutes' : $totalTime . ' minutes' : '-',
+            'date' => $filterDate,
+        ];
+
+        return Inertia::render('attendance/attendance-daily/index', compact(
+            'attendanceIn',
+            'attendanceOut',
+            'items',
+            'workingTime',
+        ));
     }
 
     /**
