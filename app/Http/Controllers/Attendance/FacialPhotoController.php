@@ -14,8 +14,8 @@ class FacialPhotoController extends Controller
      */
     public function index(Request $request)
     {
-        $faces = Face::with('user')->where('user_id', $request->user()->id)->select('user_id', 'id', 'created_at')->get();
-        return Inertia::render('attendance/facial-photo/index', compact('faces'));
+        $face = Face::with('user')->where('user_id', $request->user()->id)->select('user_id', 'id', 'photo', 'created_at')->first();
+        return Inertia::render('attendance/facial-photo/index', compact('face'));
     }
 
     /**
