@@ -69,8 +69,38 @@ class AttendanceDailyController extends Controller
      */
     public function store(Request $request)
     {
-        $request['user_id'] = $request->user()->id;
-        Attendance::create($request->all());
+        $request->validate([
+            'photo' => 'required|file|image|max:2048', // Max 2MB
+            'latitude' => 'required',
+            'longitude' => 'required',
+            'type' => 'required|in:IN,OUT',
+        ]);
+
+        $photoPath = null;
+
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = uniqid('attendance_') . '.' . $file->getClientOriginalExtension();
+
+            // Ensure directory exists
+            $destinationPath = public_path('img/attendance');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            // Move the file manually to public/img/attendance
+            $file->move($destinationPath, $filename);
+
+            $photoPath = 'img/attendance/' . $filename; // Save relative path for access
+        }
+
+        Attendance::create([
+            'user_id' => $request->user()->id,
+            'photo' => $photoPath,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'type' => $request->type,
+        ]);
     }
 
     /**

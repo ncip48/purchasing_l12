@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { SharedData } from '@/types';
 import { AttendanceMutationType } from '@/types/attendance';
+import { base64ToFile } from '@/utils/file';
 import { makeToast } from '@/utils/toast';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
@@ -49,6 +50,7 @@ export function AttendanceDialog({
     const [isDone, setIsDone] = useState(false);
     const [faceRegistered, setFaceRegistered] = useState(false);
     const [lowLight, setLowLight] = useState(false);
+    const [capturedFrame, setCapturedFrame] = useState<string | null>(null);
 
     const WS_URL = `ws://localhost:8080/ws/liveness?user_id=${auth.user.id}`;
 
@@ -115,8 +117,17 @@ export function AttendanceDialog({
     }, [open]);
 
     useEffect(() => {
-        if (open && actionDetected) {
-            makeToast({ success: true, message: 'Verification successfull' });
+        if (open && actionDetected && videoRef.current) {
+            const video = videoRef.current;
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg');
+            setCapturedFrame(imageData);
+
+            makeToast({ success: true, message: 'Verification successful' });
             stopAnything();
             setIsDone(true);
         }
@@ -192,12 +203,21 @@ export function AttendanceDialog({
         fetchLocation();
     }, [open]);
 
+    useEffect(() => {
+        if (open && capturedFrame) {
+            const file = base64ToFile(capturedFrame, 'photo.jpg');
+
+            setData('photo', file);
+            setDataOut('photo', file);
+        }
+    }, [open, capturedFrame]);
+
     const {
         setData,
         post: postIn,
         processing: processingIn,
     } = useForm<AttendanceMutationType>({
-        photo: 'no',
+        photo: '',
         latitude: '',
         longitude: '',
         type: 'IN',
@@ -223,7 +243,7 @@ export function AttendanceDialog({
         post: postOut,
         processing: processingOut,
     } = useForm<AttendanceMutationType>({
-        photo: 'no',
+        photo: '',
         latitude: '',
         longitude: '',
         type: 'OUT',

@@ -1,5 +1,5 @@
 export type AttendanceMutationType = {
-    photo: string;
+    photo: File | string;
     latitude: string;
     longitude: string;
     type: 'IN' | 'OUT';
