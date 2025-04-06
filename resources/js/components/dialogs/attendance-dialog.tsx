@@ -161,6 +161,9 @@ export function AttendanceDialog({
             setFaceMatch(false);
             setChallenge(null);
             setIsDone(false);
+            setFaceRegistered(false);
+            setLowLight(false);
+            setCapturedFrame(null);
         }
     }, [open]);
 

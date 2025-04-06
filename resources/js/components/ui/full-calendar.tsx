@@ -356,17 +356,17 @@ const CalendarMonthView = ({onClickDate}:{onClickDate:(date:string) => void}) =>
           return (
             <div
               className={cn(
-                'ring-1 p-2 text-sm text-muted-foreground ring-border overflow-auto',
+                'ring-1 p-2 text-sm text-muted-foreground ring-border overflow-auto hover:bg-accent transition-colors hover:cursor-pointer',
                 !isSameMonth(date, _date) && 'text-muted-foreground/50'
               )}
               key={_date.toString()}
+              onClick={() => onClickDate(format(_date, "yyyy-MM-dd"))}
             >
               <span
                 className={cn(
-                  'size-6 grid place-items-center rounded-full mb-1 sticky top-0 cursor-pointer',
+                  'size-6 grid place-items-center rounded-full mb-1 sticky top-0',
                   isToday(_date) && 'bg-primary text-primary-foreground'
                 )}
-                onClick={() => onClickDate(format(_date, "yyyy-MM-dd"))}
               >
                 {format(_date, 'd')}
               </span>
