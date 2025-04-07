@@ -16,7 +16,9 @@ import {
     LoaderCircle,
     MicOff,
     MoveUp,
+    Smile,
     XCircleIcon,
+    Zap,
 } from 'lucide-react';
 import { JSX, useEffect, useRef, useState } from 'react';
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
@@ -25,8 +27,10 @@ import { Card, CardContent } from '../ui/card';
 
 const challengeMap: Record<string, { text: string; icon: JSX.Element }> = {
     nod: { text: 'Nod 3 times', icon: <MoveUp className="text-primary h-6 w-6" /> },
-    mouth_open: { text: 'Open your mouth', icon: <MicOff className="text-destructive h-6 w-6" /> },
+    mouth_open: { text: 'Open your mouth', icon: <MicOff className="h-6 w-6 text-lime-500" /> },
     blink: { text: 'Blink your eyes', icon: <Eye className="h-6 w-6 text-yellow-500" /> },
+    happy: { text: 'Show a happy face', icon: <Smile className="h-6 w-6 text-green-500" /> },
+    surprise: { text: 'Show a surprised face', icon: <Zap className="h-6 w-6 text-blue-500" /> },
 };
 
 export function AttendanceDialog({

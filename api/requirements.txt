@@ -9,3 +9,7 @@ psycopg2-binary
 mysqlclient
 python-multipart
 face_recognition
+keras
+tf-keras
+tensorflow
+deepface

@@ -17,6 +17,7 @@ from uuid import UUID, uuid4
 from models import Face
 import os
 import face_recognition
+from modules.emotion import detect_emotion
 
 # FastAPI app
 app = FastAPI()
@@ -48,7 +49,7 @@ async def liveness_websocket(websocket: WebSocket, db: Session = Depends(get_db)
         await websocket.close()
         return
 
-    challenge = random.choice(["blink", "mouth_open"])  # Random challenge
+    challenge = random.choice(["blink", "mouth_open", "happy", "surprise"])  # Random challenge
 
     try:
         while True:
@@ -94,6 +95,8 @@ async def liveness_websocket(websocket: WebSocket, db: Session = Depends(get_db)
 
                 if ((challenge == "blink" and detect_blink(landmarks)) or
                     (challenge == "mouth_open" and detect_mouth_open(landmarks)) or
+                    (challenge == "happy" and detect_emotion(frame, challenge)) or
+                    (challenge == "surprise" and detect_emotion(frame, challenge)) or
                     (challenge == "nod" and detect_nod(landmarks))):
                     await websocket.send_json({
                         "is_low_light": False,
