@@ -2,11 +2,11 @@ from uuid import UUID
 import cv2
 import numpy as np
 import face_recognition
+import base64
 from modules.blink import detect_blink
 from modules.open_mouth import detect_mouth_open
 from modules.nod import detect_nod
 from modules.emotion import detect_emotion
-from modules.spoof import detect_spoofing
 
 def uuid_to_bin(uuid_obj: UUID) -> bytes:
     return uuid_obj.bytes
