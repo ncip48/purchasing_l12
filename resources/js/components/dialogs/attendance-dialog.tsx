@@ -47,13 +47,16 @@ export function AttendanceDialog({
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
     const [message, setMessage] = useState<string | null>('Initializing...');
-    const [actionDetected, setActionDetected] = useState(false);
     const [faceDetected, setFaceDetected] = useState(true);
     const [faceMatch, setFaceMatch] = useState(false);
-    const [challenge, setChallenge] = useState<{ text: string; icon: JSX.Element } | null>(null);
     const [isDone, setIsDone] = useState(false);
     const [faceRegistered, setFaceRegistered] = useState(false);
     const [lowLight, setLowLight] = useState(false);
+
+    //NEW
+    const [error, setError] = useState<null | string>(null);
+    const [challenge, setChallenge] = useState<{ text: string; icon: JSX.Element } | null>(null);
+    const [actionDetected, setActionDetected] = useState(false);
     const [capturedFrame, setCapturedFrame] = useState<string | null>(null);
 
     const WS_URL = `ws://localhost:8080/ws/liveness?user_id=${auth.user.id}`;
@@ -105,15 +108,16 @@ export function AttendanceDialog({
             wsRef.current.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 console.log('Received data:', data);
-                setFaceDetected(data.face_detected);
-                setFaceMatch(data.face_match);
                 setChallenge(
                     challengeMap[data.challenge] || { text: 'Unknown challenge', icon: <AlertCircle className="text-muted-foreground h-6 w-6" /> },
                 );
-                setActionDetected(data.action_detected || false);
                 setMessage(null);
-                setFaceRegistered(data.is_face_registered);
-                setLowLight(data.is_low_light);
+                setActionDetected(data.action_detected || false);
+                setError(data.error);
+                // setFaceDetected(data.face_detected);
+                // setFaceMatch(data.face_match);
+                // setFaceRegistered(data.is_face_registered);
+                // setLowLight(data.is_low_light);
             };
         } else {
             stopAnything();
@@ -322,29 +326,9 @@ export function AttendanceDialog({
                                 </div>
                             )}
 
-                            {!faceDetected && challenge && !isDone && !faceRegistered && (
+                            {error && (
                                 <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/80 text-sm font-bold text-white">
-                                    You must register your face first
-                                </div>
-                            )}
-
-                            {!faceDetected && challenge && !isDone && faceRegistered && lowLight && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/80 text-sm font-bold text-white">
-                                    Low light condition detected. Please ensure proper lighting.
-                                </div>
-                            )}
-
-                            {/* Overlay: Face not detected */}
-                            {!faceDetected && challenge && !isDone && faceRegistered && !lowLight && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
-                                    Face not detected
-                                </div>
-                            )}
-
-                            {/* Overlay: Face not matched */}
-                            {faceDetected && !faceMatch && challenge && !isDone && faceRegistered && !lowLight && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-sm font-bold text-white">
-                                    Face not matched
+                                    {error}
                                 </div>
                             )}
 
@@ -356,7 +340,7 @@ export function AttendanceDialog({
                             )}
 
                             {/* Overlay: Challenge badge at bottom */}
-                            {(challenge?.text || message) && faceRegistered && (
+                            {(challenge?.text || message) && !error && (
                                 <motion.div
                                     key={challenge?.text}
                                     initial={{ opacity: 0, y: 10 }}

@@ -5,9 +5,6 @@ import mediapipe as mp
 import base64
 import random
 from operator import attrgetter
-from modules.blink import detect_blink
-from modules.open_mouth import detect_mouth_open
-from modules.nod import detect_nod
 from database import get_db
 from auth import get_current_user
 from sqlalchemy.orm import Session
@@ -16,8 +13,7 @@ from utils import uuid_to_bin
 from uuid import UUID, uuid4
 from models import Face
 import os
-import face_recognition
-from modules.emotion import detect_emotion
+from utils import send_error, decode_frame, is_low_light, resize_to_square, match_face, get_landmarks, detect_challenge_action
 
 # FastAPI app
 app = FastAPI()
@@ -35,97 +31,63 @@ mp_drawing = mp.solutions.drawing_utils
 async def liveness_websocket(websocket: WebSocket, db: Session = Depends(get_db)):
     await websocket.accept()
 
-    # ✅ Get user_id from query parameter
     user_id = websocket.query_params.get("user_id")
     if not user_id:
-        await websocket.send_json({"error": "Missing user_id"})
-        await websocket.close()
+        await send_error(websocket, "Missing user_id")
         return
 
-    # ✅ Check if the face is registered first
     face = db.query(Face).filter(Face.user_id == user_id).first()
     if not face:
-        await websocket.send_json({"is_face_registered": False})
-        await websocket.close()
+        await send_error(websocket, "Face not registered")
         return
 
-    challenge = random.choice(["blink", "mouth_open", "happy", "surprise"])  # Random challenge
+    challenge = random.choice(["blink", "mouth_open", "happy", "surprise"])
 
     try:
         while True:
             data = await websocket.receive_text()
-            frame = cv2.imdecode(np.frombuffer(base64.b64decode(data), np.uint8), cv2.IMREAD_COLOR)
-            
-            # ✅ Check for low light condition
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            brightness = np.mean(gray)
-            if brightness < 50:  # You can tune this threshold
-                await websocket.send_json({
-                    "is_low_light": True,
-                    "challenge": challenge,
-                    "action_detected": False,
-                    "face_detected": False,
-                    "face_match": False,
-                    "is_face_registered": True,
-                })
-                continue  # Skip processing this frame
+            frame = decode_frame(data)
 
-            # Resize to square image to avoid MediaPipe warnings
-            height, width = frame.shape[:2]
-            size = max(height, width)
-            frame = cv2.resize(frame, (size, size))
+            # Step 2: Check low light
+            if is_low_light(frame):
+                await send_error(websocket, "Low light condition")
+                continue
 
+            # Step 3: Detect face landmarks
+            frame = resize_to_square(frame)
             results = face_mesh.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            if not results.multi_face_landmarks:
+                await send_error(websocket, "No face detected")
+                continue
 
-            face_match = False
-            face_detected = False
+            # Step 4: Match face
+            if not match_face(frame, face):
+                await send_error(websocket, "Face does not match")
+                continue
+            
+            spoofing = detect_spoofing(frame)
 
-            if results.multi_face_landmarks:
-                face_detected = True
-                face_locations = face_recognition.face_locations(frame)
-                face_encodings = face_recognition.face_encodings(frame, face_locations)
-
-                stored_face_encoding = np.frombuffer(face.face_encoding, dtype=np.float64)
-                for face_encoding in face_encodings:
-                    match = face_recognition.compare_faces([stored_face_encoding], face_encoding)[0]
-                    if match:
-                        face_match = True
-
-                landmarks = np.array([(lm.x, lm.y, lm.z) for lm in results.multi_face_landmarks[0].landmark])
-
-                if ((challenge == "blink" and detect_blink(landmarks)) or
-                    (challenge == "mouth_open" and detect_mouth_open(landmarks)) or
-                    (challenge == "happy" and detect_emotion(frame, challenge)) or
-                    (challenge == "surprise" and detect_emotion(frame, challenge)) or
-                    (challenge == "nod" and detect_nod(landmarks))):
-                    await websocket.send_json({
-                        "is_low_light": False,
-                        "challenge": challenge,
-                        "action_detected": True,
-                        "face_detected": True,
-                        "face_match": face_match,
-                        "is_face_registered": True,
-                    })
-                    break
-                else:
-                    await websocket.send_json({
-                        "is_low_light": False,
-                        "challenge": challenge,
-                        "face_detected": True,
-                        "face_match": face_match,
-                        "is_face_registered": True,
-                    })
+            if spoofing:
+                print("Liveness:", spoofing["label"])
             else:
-                await websocket.send_json({
-                    "is_low_light": False,
-                    "challenge": challenge,
-                    "face_detected": False,
-                    "face_match": False,
-                    "is_face_registered": True,
-                })
+                print("No face or not confident enough")
+
+            # Step 5: Perform challenge
+            landmarks = get_landmarks(results)
+            action_detected = bool(detect_challenge_action(challenge, frame, landmarks))
+
+            await websocket.send_json({
+                "error": None,
+                "challenge": challenge,
+                "action_detected": action_detected
+            })
+
+            if action_detected:
+                break
 
     except Exception as e:
         print(f"WebSocket Error: {e}")
+        await send_error(websocket, "Internal server error")
     finally:
         await websocket.close()
 

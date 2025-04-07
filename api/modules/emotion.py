@@ -6,7 +6,5 @@ def detect_emotion(frame, emotion):
     # Get dominant emotion
     dominant_emotion = result[0]['dominant_emotion']
     
-    print(f'{dominant_emotion}, {emotion}')
-    
     if dominant_emotion == emotion:
         return True

@@ -40,9 +40,7 @@ function Page({ items, workingTime }: { items: AttendanceType[]; workingTime: Wo
                                 Attend
                             </Button>
                         </div>
-                        <div className="hidden">
-                            <WorkingTimeCard data={workingTime} />
-                        </div>
+                        <WorkingTimeCard data={workingTime} />
                         <AttendanceDailyCalendar
                             items={items}
                             onClickDate={(date) => {
