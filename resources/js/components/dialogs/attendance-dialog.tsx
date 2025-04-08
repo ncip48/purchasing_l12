@@ -47,11 +47,7 @@ export function AttendanceDialog({
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const wsRef = useRef<WebSocket | null>(null);
     const [message, setMessage] = useState<string | null>('Initializing...');
-    const [faceDetected, setFaceDetected] = useState(true);
-    const [faceMatch, setFaceMatch] = useState(false);
     const [isDone, setIsDone] = useState(false);
-    const [faceRegistered, setFaceRegistered] = useState(false);
-    const [lowLight, setLowLight] = useState(false);
 
     //NEW
     const [error, setError] = useState<null | string>(null);
@@ -60,6 +56,7 @@ export function AttendanceDialog({
     const [capturedFrame, setCapturedFrame] = useState<string | null>(null);
 
     const WS_URL = `ws://localhost:8080/ws/liveness?user_id=${auth.user.id}`;
+    // const WS_URL = `ws://localhost:8080/ws/liveness/?user_id=2`;
 
     const sendFrame = (frame: string) => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -114,10 +111,6 @@ export function AttendanceDialog({
                 setMessage(null);
                 setActionDetected(data.action_detected || false);
                 setError(data.error);
-                // setFaceDetected(data.face_detected);
-                // setFaceMatch(data.face_match);
-                // setFaceRegistered(data.is_face_registered);
-                // setLowLight(data.is_low_light);
             };
         } else {
             stopAnything();
@@ -165,12 +158,8 @@ export function AttendanceDialog({
         if (!open) {
             setActionDetected(false);
             setMessage('Initializing...');
-            setFaceDetected(false);
-            setFaceMatch(false);
             setChallenge(null);
             setIsDone(false);
-            setFaceRegistered(false);
-            setLowLight(false);
             setCapturedFrame(null);
         }
     }, [open]);
@@ -309,11 +298,7 @@ export function AttendanceDialog({
                     {/* === Left: Camera preview === */}
                     <Card
                         className={`relative w-full border !p-1 transition-colors duration-300 ${
-                            faceDetected && faceMatch && !actionDetected && challenge
-                                ? 'border-muted'
-                                : actionDetected
-                                  ? 'border-green-500'
-                                  : 'border-red-500'
+                            !error && !actionDetected && challenge ? 'border-muted' : actionDetected ? 'border-green-500' : 'border-red-500'
                         }`}
                     >
                         <CardContent className="relative p-0">

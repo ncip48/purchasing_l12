@@ -25,7 +25,6 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # Load MediaPipe FaceMesh
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(refine_landmarks=True)
-mp_drawing = mp.solutions.drawing_utils
 
 @app.websocket("/ws/liveness")
 async def liveness_websocket(websocket: WebSocket, db: Session = Depends(get_db)):
