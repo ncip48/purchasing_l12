@@ -17,8 +17,9 @@ import { Link } from '@inertiajs/react';
 
 export function NavMain({ items }: { items: NavItem[] }) {
     const { pathname } = window.location;
+
     const isActive = (url: string) => {
-        return pathname.split('/')[1] === url.replace('/', '');
+        return pathname.includes(url);
     };
 
     return (
@@ -41,7 +42,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
                                             <SidebarMenuSubItem key={subItem.title}>
                                                 <SidebarMenuSubButton asChild>
                                                     <Link href={subItem.url}>
-                                                        <span className={pathname === subItem.url ? 'font-bold' : ''}>{subItem.title}</span>
+                                                        <span className={isActive(subItem.url) ? 'font-bold' : ''}>{subItem.title}</span>
                                                     </Link>
                                                 </SidebarMenuSubButton>
                                             </SidebarMenuSubItem>
@@ -53,7 +54,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
                     ) : (
                         <Link href={item.url} key={index}>
                             <SidebarMenuItem>
-                                <SidebarMenuButton tooltip={item.title} isActive={item.url === pathname} className="cursor-pointer">
+                                <SidebarMenuButton tooltip={item.title} isActive={isActive(item.url)} className="cursor-pointer">
                                     {item.icon && <item.icon />}
                                     <span>{item.title}</span>
                                 </SidebarMenuButton>
