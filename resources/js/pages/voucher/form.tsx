@@ -63,7 +63,7 @@ export default function Form() {
                                 error={errors.name}
                             />
                             <TextInput
-                                title="Duration"
+                                title="Duration (Minutes)"
                                 name="duration"
                                 defaultValue={isEdit ? item?.duration || 0 : 0}
                                 onChange={(e) => setData('duration', Number(e.target.value))}

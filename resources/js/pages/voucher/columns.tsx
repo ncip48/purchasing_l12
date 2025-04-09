@@ -11,6 +11,10 @@ export const columns: ExtendedColumnDef<VoucherType, VoucherType>[] = [
     {
         accessorKey: 'duration',
         header: 'Duration',
+        cell: ({ row }) => {
+            const hours = row.original.duration / 60;
+            return `${row.original.duration} menit (${hours} jam)`;
+        },
     },
     {
         accessorKey: 'price',
@@ -30,7 +34,7 @@ export const columns: ExtendedColumnDef<VoucherType, VoucherType>[] = [
                     {status === 'ACTIVE' ? (
                         <CheckCircle2Icon className="h-4 w-4 text-green-500" />
                     ) : (
-                        <XCircleIcon className="text-muted-foreground h-4 w-4" />
+                        <XCircleIcon className="text-destructive h-4 w-4" />
                     )}
                 </div>
             );

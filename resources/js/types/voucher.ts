@@ -1,7 +1,7 @@
 export type VoucherType = {
     id: string;
-    name: string | null;
-    price: number | null;
-    duration: number | null;
+    name: string;
+    price: number;
+    duration: number;
     status: 'ACTIVE' | 'INACTIVE';
 };
