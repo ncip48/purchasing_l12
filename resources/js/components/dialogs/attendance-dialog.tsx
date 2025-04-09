@@ -55,8 +55,8 @@ export function AttendanceDialog({
     const [actionDetected, setActionDetected] = useState(false);
     const [capturedFrame, setCapturedFrame] = useState<string | null>(null);
 
-    // const WS_URL = `ws://localhost:8080/ws/liveness?user_id=${auth.user.id}`;
-    const WS_URL = `wss://c4c7-180-248-28-234.ngrok-free.app/ws/liveness?user_id=${auth.user.id}`;
+    const WS_URL = `ws://localhost:8080/ws/liveness?user_id=${auth.user.id}`;
+    // const WS_URL = `wss://c4c7-180-248-28-234.ngrok-free.app/ws/liveness?user_id=${auth.user.id}`;
     // const WS_URL = `ws://localhost:8080/ws/liveness/?user_id=2`;
 
     const sendFrame = (frame: string) => {
