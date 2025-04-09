@@ -37,8 +37,8 @@ function Page() {
                 <Card>
                     <CardContent>
                         <div className="mb-4 flex items-center justify-between">
-                            <h2 className="mb-4 text-xl font-bold">Facial Photo</h2>
-                            <Button onClick={() => {}}>
+                            <h2 className="text-xl font-bold">Facial Photo</h2>
+                            <Button onClick={() => {}} size="sm">
                                 <PlusIcon />
                                 Add Photo
                             </Button>

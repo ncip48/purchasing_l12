@@ -34,8 +34,8 @@ function Page({ items, workingTime }: { items: AttendanceType[]; workingTime: Wo
                 <Card>
                     <CardContent>
                         <div className="mb-4 flex items-center justify-between">
-                            <h2 className="mb-4 text-xl font-bold">Attendance Daily</h2>
-                            <Button onClick={() => setOpenModal(true)}>
+                            <h2 className="text-xl font-bold">Attendance Daily</h2>
+                            <Button onClick={() => setOpenModal(true)} size="sm">
                                 <StampIcon />
                                 Attend
                             </Button>
