@@ -92,7 +92,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                                     const columnDef = header.column.columnDef as ExtendedColumnDef<TData, TValue>;
                                     if (columnDef.childs) {
                                         return (
-                                            <TableHead key={header.id} colSpan={columnDef.childs.length} className="border text-center">
+                                            <TableHead key={header.id} colSpan={columnDef.childs.length} className="border">
                                                 {flexRender(columnDef.header, header.getContext() as HeaderContext<TData, TValue>)}
                                             </TableHead>
                                         );
@@ -136,17 +136,19 @@ export function DataTable<TData extends { id: string }, TValue>({
                                     {/* Render cells */}
                                     {columns.map((column) => {
                                         if (column.childs) {
-                                            // Render each child as a separate <td>
-                                            return column.childs.map((child) => (
-                                                <TableCell key={`${column.accessorKey}-${child.accessorKey}`} className="border text-center">
-                                                    {(row.original as Record<string, ReactNode>)[child.accessorKey]}
-                                                </TableCell>
-                                            ));
+                                            return column.childs.map((child) => {
+                                                const cell = row.getAllCells().find((c) => c.column.id === child.accessorKey);
+                                                return (
+                                                    <TableCell key={`${column.accessorKey}-${child.accessorKey}`} className="border">
+                                                        {cell ? flexRender(cell.column.columnDef.cell, cell.getContext()) : null}
+                                                    </TableCell>
+                                                );
+                                            });
                                         } else {
-                                            // Render regular column values
+                                            const cell = row.getAllCells().find((c) => c.column.id === column.accessorKey);
                                             return (
                                                 <TableCell key={column.accessorKey} className="border">
-                                                    {(row.original as Record<string, ReactNode>)[column.accessorKey]}
+                                                    {cell ? flexRender(cell.column.columnDef.cell, cell.getContext()) : null}
                                                 </TableCell>
                                             );
                                         }
