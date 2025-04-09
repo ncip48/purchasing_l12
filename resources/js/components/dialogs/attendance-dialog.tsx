@@ -186,21 +186,22 @@ export function AttendanceDialog({
 
     useEffect(() => {
         const fetchLocation = async () => {
-            if (open) {
-                try {
-                    const { latitude, longitude } = await getLocation();
-                    setData('latitude', latitude);
-                    setData('longitude', longitude);
-                    setDataOut('latitude', latitude);
-                    setDataOut('longitude', longitude);
-                } catch (error) {
-                    console.log(error);
-                    makeToast({ success: false, message: 'Failed to get location' });
-                }
+            try {
+                const { latitude, longitude } = await getLocation();
+
+                setData('latitude', latitude);
+                setData('longitude', longitude);
+                setDataOut('latitude', latitude);
+                setDataOut('longitude', longitude);
+            } catch (error) {
+                console.log(error);
+                makeToast({ success: false, message: 'Failed to get location' });
             }
         };
 
-        fetchLocation();
+        if (open) {
+            fetchLocation();
+        }
     }, [open]);
 
     useEffect(() => {
@@ -218,8 +219,8 @@ export function AttendanceDialog({
         processing: processingIn,
     } = useForm<AttendanceMutationType>({
         photo: '',
-        latitude: '',
-        longitude: '',
+        latitude: '-',
+        longitude: '-',
         type: 'IN',
     });
 
@@ -244,8 +245,8 @@ export function AttendanceDialog({
         processing: processingOut,
     } = useForm<AttendanceMutationType>({
         photo: '',
-        latitude: '',
-        longitude: '',
+        latitude: '-',
+        longitude: '-',
         type: 'OUT',
     });
 

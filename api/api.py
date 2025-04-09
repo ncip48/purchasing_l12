@@ -3,13 +3,11 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import random
-from operator import attrgetter
 from database import get_db
 from auth import get_current_user
 from sqlalchemy.orm import Session
 from face import encode_face
-from utils import uuid_to_bin
-from uuid import UUID, uuid4
+from uuid import uuid4
 from models import Face
 import os
 from utils import send_error, decode_frame, is_low_light, resize_to_square, match_face, get_landmarks, detect_challenge_action

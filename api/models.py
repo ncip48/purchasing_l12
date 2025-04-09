@@ -1,10 +1,7 @@
 import uuid
-from sqlalchemy.dialects.mysql import BINARY as MYSQL_BINARY
-from sqlalchemy import Column, String, LargeBinary, ForeignKey, DateTime, func
-from sqlalchemy.dialects.mysql import BINARY
+from sqlalchemy import Column, String, LargeBinary, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
-from utils import uuid_to_bin  # UUID -> binary(16)
 from datetime import datetime
 
 def generate_uuid_bin():
