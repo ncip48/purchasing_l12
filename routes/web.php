@@ -3,6 +3,7 @@
 use App\Http\Controllers\Attendance\AttendanceDailyController;
 use App\Http\Controllers\Attendance\FacialPhotoController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -29,6 +30,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Voucher
     Route::resource('voucher', VoucherController::class);
+
+    // Transaction
+    Route::resource('transaction', TransactionController::class);
+    Route::get('buy', [TransactionController::class, 'buy']);
 
     //TEST ROUTE
     Route::get('test', [PermissionController::class, 'test']);

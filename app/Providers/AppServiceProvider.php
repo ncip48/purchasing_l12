@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 
@@ -20,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // if (env(key: 'APP_ENV') == 'local') {
+        URL::forceScheme(scheme: 'https');
+        // }
         Inertia::share([
             'apiUrl' => env('API_URL', 'http://localhost:8000'),
             'wsUrl' => env('WS_URL', 'ws://localhost:8000'),

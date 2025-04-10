@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { SharedData } from '@/types';
 import { FaceMutationType } from '@/types/face';
 import { base64ToFile } from '@/utils/file';
 import { makeToast } from '@/utils/toast';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, CameraIcon, LoaderCircle, SaveIcon, XCircleIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -12,8 +11,6 @@ import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 
 export function RegisterFaceDialog({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
-    const { auth, wsUrl } = usePage<SharedData>().props;
-
     const videoRef = useRef<HTMLVideoElement | null>(null);
 
     //NEW
@@ -97,7 +94,6 @@ export function RegisterFaceDialog({ open, setOpen }: { open: boolean; setOpen: 
     };
 
     const {
-        data,
         setData,
         post,
         processing: processing,

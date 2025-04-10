@@ -14,7 +14,7 @@ interface SwitchInputProps {
 const SwitchInput = forwardRef<HTMLButtonElement, SwitchInputProps>(({ title, name, checked, onCheckedChange, error }, ref) => {
     return (
         <div>
-            <div className="flex items-center space-x-2">
+            <div className="mt-1 flex items-center space-x-2">
                 <Switch id={name} ref={ref} defaultChecked={checked} onCheckedChange={onCheckedChange} />
                 <Label htmlFor={name}>{title}</Label>
             </div>
