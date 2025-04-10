@@ -1,4 +1,5 @@
-from fastapi import FastAPI, WebSocket, APIRouter, Depends, File, UploadFile, HTTPException
+import json
+from fastapi import FastAPI, Request, WebSocket, APIRouter, Depends, File, UploadFile, HTTPException
 import cv2
 import numpy as np
 import mediapipe as mp
@@ -132,6 +133,18 @@ async def train_face(
     db.commit()
 
     return {"message": "Face encoding and photo saved successfully", "photo": filename}
+
+@router.post("/webhook")
+async def webhook(request: Request):
+    headers = dict(request.headers)
+    body = await request.body()
+    
+    print("=== Incoming Webhook ===")
+    print("Headers:", json.dumps(headers, indent=2))
+    print("Body:", body.decode("utf-8"))
+    print("========================")
+
+    return {"message": "Webhook received"}
 
 app.include_router(router, prefix="/api")
 

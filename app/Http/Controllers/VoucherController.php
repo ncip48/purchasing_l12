@@ -89,7 +89,7 @@ class VoucherController extends Controller
             'status' => $request->status,
         ]);
 
-        return redirect()->route('voucher.index')->with('success', 'Coucher updated successfully.');
+        return redirect()->route('voucher.index')->with('success', 'Voucher updated successfully.');
     }
 
     /**

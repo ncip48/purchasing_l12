@@ -51,17 +51,15 @@ class FacialPhotoController extends Controller
             ->post("$apiUrl/api/train-face");
 
         if ($response->successful()) {
-            return response()->json([
+            return Inertia::render('attendance/facial-photo/index', [
                 'success' => true,
                 'message' => 'Face added successfully',
-                'data' => $response->json(),
             ]);
         } else {
-            return response()->json([
+            return Inertia::render('attendance/facial-photo/index', [
                 'success' => false,
                 'message' => 'Face added failed',
-                'error' => $response->body(),
-            ], 500);
+            ]);
         }
     }
 

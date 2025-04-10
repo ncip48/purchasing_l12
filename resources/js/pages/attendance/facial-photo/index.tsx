@@ -1,4 +1,5 @@
 import Container from '@/components/container';
+import { RegisterFaceDialog } from '@/components/dialogs/register-face-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -6,6 +7,7 @@ import { BreadcrumbItem, PageProps } from '@/types';
 import { FaceType } from '@/types/face';
 import { Head, usePage } from '@inertiajs/react';
 import { PlusIcon } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -27,6 +29,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 function Page() {
     const { face } = usePage<PageProps<{ face: FaceType }>>().props;
 
+    const [openModal, setOpenModal] = useState(false);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Facial Photo" />
@@ -35,7 +39,7 @@ function Page() {
                     <CardContent>
                         <div className="mb-4 flex items-center justify-between">
                             <h2 className="text-xl font-bold">Facial Photo</h2>
-                            <Button onClick={() => {}} size="sm">
+                            <Button onClick={() => setOpenModal(true)} size="sm">
                                 <PlusIcon />
                                 Add Photo
                             </Button>
@@ -59,6 +63,7 @@ function Page() {
                     </CardContent>
                 </Card>
             </Container>
+            <RegisterFaceDialog open={openModal} setOpen={setOpenModal} />
         </AppLayout>
     );
 }

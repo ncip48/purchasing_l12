@@ -4,3 +4,7 @@ export type FaceType = {
     face_encoding: string | null;
     photo: string | null;
 };
+
+export type FaceMutationType = {
+    image: File | string;
+};
