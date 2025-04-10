@@ -6,7 +6,6 @@ numpy
 websockets
 sqlalchemy
 psycopg2-binary
-mysqlclient
 python-multipart
 face_recognition
 keras
