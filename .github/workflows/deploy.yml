@@ -1,4 +1,4 @@
-name: Deploy to cPanel
+name: Deploy Laravel to cPanel
 
 on:
   push:
@@ -7,22 +7,21 @@ on:
 
 jobs:
   deploy:
+    name: SSH Deploy
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.CPANEL_SSH_KEY }}
 
-      - name: Deploy to cPanel via SSH
+      - name: Deploy via SSH
         run: |
-          ssh ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} << 'EOF'
             cd public_html/attendance.dotech-digital.com/
             git pull origin master
             npm install
