@@ -26,6 +26,8 @@ export interface NavItem {
 }
 
 export interface SharedData {
+    apiUrl: string;
+    wsUrl: string;
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
@@ -44,6 +46,8 @@ export interface User {
 }
 
 export type PageProps<T> = {
+    apiUrl: string;
+    wsUrl: string;
     auth: {
         user: {
             id: number;

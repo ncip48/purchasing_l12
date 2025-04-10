@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Attendance;
 use App\Http\Controllers\Controller;
 use App\Models\Face;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 
 class FacialPhotoController extends Controller
@@ -31,7 +32,37 @@ class FacialPhotoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'image' => 'required|image',
+        ]);
+
+        $image = $request->file('image');
+
+        $userId = $request->user()->id;
+        $apiUrl = env("API_URL");
+        $response = Http::attach(
+            'image',
+            file_get_contents($image->getRealPath()),
+            $image->getClientOriginalName()
+        )
+            ->withHeaders([
+                'Authorization' => "Bearer $userId",
+            ])
+            ->post("$apiUrl/api/train-face");
+
+        if ($response->successful()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Face added successfully',
+                'data' => $response->json(),
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Face added failed',
+                'error' => $response->body(),
+            ], 500);
+        }
     }
 
     /**

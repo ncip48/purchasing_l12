@@ -19,20 +19,9 @@ def get_token_from_header(authorization: str = Header(None)):
 def get_current_user(
     db: Session = Depends(get_db),
     token: str = Depends(get_token_from_header),
-):
-    # # Step 1: Verify token in Laravel's `personal_access_tokens` table
-    result = db.execute(
-        text("SELECT user_id FROM sessions WHERE id = :session_id LIMIT 1"),
-        {"session_id": token}
-    ).fetchone()
-
-    if not result:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    user_id_bin = result[0]  # Should be BINARY(16)
-    
+):  
     try:
-        user = db.query(User).filter(User.id == user_id_bin).first()
+        user = db.query(User).filter(User.id == token).first()
     except Exception:
         raise HTTPException(status_code=401, detail="User lookup failed")
 

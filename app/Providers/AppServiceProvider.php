@@ -21,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Inertia::share([
+            'apiUrl' => env('API_URL', 'http://localhost:8000'),
+            'wsUrl' => env('WS_URL', 'ws://localhost:8000'),
             'flash' => function () {
                 return [
                     'success' => session('success'),
